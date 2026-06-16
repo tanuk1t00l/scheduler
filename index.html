@@ -95,15 +95,24 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.25rem}
 
 /* 휴무일 설정 */
 .offday-section{}
-.offday-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-.offday-input-row{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.offday-type-row{display:flex;gap:0;border:0.5px solid #d0d0cc;border-radius:7px;overflow:hidden;margin-bottom:6px;width:fit-content}
+.offday-type-btn{padding:5px 12px;font-size:11px;background:transparent;border:none;cursor:pointer;color:#888}
+.offday-type-btn.active{background:#f0f0ee;color:#1a1a1a;font-weight:500}
+.offday-type-btn:not(:last-child){border-right:0.5px solid #d0d0cc}
+.offday-input-row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
 .offday-input-row input[type=date]{height:32px;font-size:12px;padding:0 8px;border:0.5px solid #d0d0cc;border-radius:7px;background:#fff;color:#1a1a1a;font-family:'Noto Sans KR','Noto Sans',sans-serif;letter-spacing:-0.02em;outline:none}
-.offday-input-row input[type=text]{height:32px;font-size:12px;padding:0 8px;border:0.5px solid #d0d0cc;border-radius:7px;background:#fff;color:#1a1a1a;outline:none;width:140px}
-.btn-offday-add{height:32px;padding:0 12px;font-size:12px;background:#1a1a1a;color:#fff;border:none;border-radius:7px;cursor:pointer}
+.offday-input-row input[type=text]{height:32px;font-size:12px;padding:0 8px;border:0.5px solid #d0d0cc;border-radius:7px;background:#fff;color:#1a1a1a;outline:none;width:110px}
+.btn-offday-add{height:32px;padding:0 12px;font-size:12px;background:#1a1a1a;color:#fff;border:none;border-radius:7px;cursor:pointer;white-space:nowrap}
 .btn-offday-add:hover{background:#333}
-.offday-list{display:flex;flex-wrap:wrap;gap:6px}
-.offday-tag{display:flex;align-items:center;gap:4px;background:#f5f5f3;border:0.5px solid #d0d0cc;border-radius:5px;padding:3px 8px;font-size:12px;color:#555}
-.offday-tag .tag-remove{cursor:pointer;color:#aaa;font-size:14px;line-height:1;margin-left:2px}
+.offday-range-sep{font-size:11px;color:#aaa;flex-shrink:0}
+/* 목록 접기 */
+.offday-list-wrap{}
+.offday-list-toggle{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#aaa;cursor:pointer;background:transparent;border:none;padding:0;margin-bottom:4px}
+.offday-list-toggle:hover{color:#555}
+.offday-list{display:flex;flex-wrap:wrap;gap:5px;overflow:hidden;transition:max-height 0.2s ease,opacity 0.2s ease;max-height:200px;opacity:1}
+.offday-list.hidden{max-height:0;opacity:0;pointer-events:none}
+.offday-tag{display:flex;align-items:center;gap:4px;background:#f5f5f3;border:0.5px solid #d0d0cc;border-radius:5px;padding:3px 8px;font-size:11px;color:#555}
+.offday-tag .tag-remove{cursor:pointer;color:#aaa;font-size:13px;line-height:1;margin-left:2px}
 .offday-tag .tag-remove:hover{color:#c0392b}
 .cal-cell.offday{background:#f5f5f3}
 .cal-cell.offday .cal-date{color:#ccc}
@@ -155,12 +164,19 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.25rem}
     </div>
     <div class="offday-section option-group">
       <div class="section-label">휴무일 설정 <span style="font-size:11px;font-weight:400;color:#bbb">(공휴일·휴가 등 작업 불가 날짜)</span></div>
-      <div class="offday-input-row">
+      <div class="offday-type-row">
+        <button class="offday-type-btn active" id="odSingle" onclick="setOffdayType('single')">단일 날짜</button>
+        <button class="offday-type-btn" id="odRange" onclick="setOffdayType('range')">기간</button>
+      </div>
+      <div class="offday-input-row" id="offdayInputRow">
         <input type="date" id="offdayDate">
         <input type="text" id="offdayLabel" placeholder="메모 (예: 추석)" maxlength="20">
         <button class="btn-offday-add" onclick="addOffday()">추가</button>
       </div>
-      <div class="offday-list" id="offdayList"></div>
+      <div class="offday-list-wrap">
+        <button class="offday-list-toggle" id="offdayToggle" onclick="toggleOffdayList()" style="display:none">▼ 목록 보기 (0)</button>
+        <div class="offday-list hidden" id="offdayList"></div>
+      </div>
     </div>
   </div>
 
@@ -239,7 +255,9 @@ let jobs=[], scheduleData=[], calYear, calMonth;
 let mode='sequential';
 let weekendMode='all';
 let dailyCap=0;
-let offdays={}; // {dateStr: label}
+let offdays={}; // {dateStr: label} or {dateStr: {label, rangeEnd}}
+let offdayType='single';
+let offdayListOpen=false;
 let calView=1; // 1 or 2
 let jobSectionOpen=true;
 
@@ -253,13 +271,49 @@ function setCalView(v){
 }
 
 /* ── 휴무일 ── */
+function setOffdayType(t){
+  offdayType=t;
+  document.getElementById('odSingle').classList.toggle('active',t==='single');
+  document.getElementById('odRange').classList.toggle('active',t==='range');
+  const row=document.getElementById('offdayInputRow');
+  if(t==='single'){
+    row.innerHTML=`<input type="date" id="offdayDate"><input type="text" id="offdayLabel" placeholder="메모 (예: 추석)" maxlength="20" class="offday-input-row input[type=text]" style="height:32px;font-size:12px;padding:0 8px;border:0.5px solid #d0d0cc;border-radius:7px;background:#fff;color:#1a1a1a;outline:none;width:110px"><button class="btn-offday-add" onclick="addOffday()">추가</button>`;
+  } else {
+    row.innerHTML=`<input type="date" id="offdayDateFrom"><span class="offday-range-sep">~</span><input type="date" id="offdayDateTo"><input type="text" id="offdayLabel" placeholder="메모 (예: 연차)" maxlength="20" style="height:32px;font-size:12px;padding:0 8px;border:0.5px solid #d0d0cc;border-radius:7px;background:#fff;color:#1a1a1a;outline:none;width:110px"><button class="btn-offday-add" onclick="addOffday()">추가</button>`;
+  }
+}
+function toggleOffdayList(){
+  offdayListOpen=!offdayListOpen;
+  const list=document.getElementById('offdayList');
+  const btn=document.getElementById('offdayToggle');
+  list.classList.toggle('hidden',!offdayListOpen);
+  const count=Object.keys(offdays).length;
+  btn.textContent=(offdayListOpen?'▲ 목록 숨기기':'▼ 목록 보기')+` (${count})`;
+}
 function addOffday(){
-  const dateEl=document.getElementById('offdayDate');
   const labelEl=document.getElementById('offdayLabel');
-  const ds=dateEl.value;
-  if(!ds)return;
-  offdays[ds]=labelEl.value.trim()||'휴무';
-  labelEl.value='';dateEl.value='';
+  const label=labelEl?labelEl.value.trim()||'휴무':'휴무';
+  if(offdayType==='single'){
+    const dateEl=document.getElementById('offdayDate');
+    const ds=dateEl?dateEl.value:'';
+    if(!ds)return;
+    offdays[ds]=label;
+    if(dateEl)dateEl.value='';
+  } else {
+    const fromEl=document.getElementById('offdayDateFrom');
+    const toEl=document.getElementById('offdayDateTo');
+    const from=fromEl?fromEl.value:'';
+    const to=toEl?toEl.value:'';
+    if(!from||!to||from>to)return;
+    const cur=new Date(from);const end=new Date(to);
+    while(cur<=end){
+      const ds=dateStr(cur.getFullYear(),cur.getMonth(),cur.getDate());
+      offdays[ds]=label;
+      cur.setDate(cur.getDate()+1);
+    }
+    if(fromEl)fromEl.value='';if(toEl)toEl.value='';
+  }
+  if(labelEl)labelEl.value='';
   renderOffdayList();saveLS();
 }
 function removeOffday(ds){
@@ -270,9 +324,16 @@ function renderOffdayList(){
   const el=document.getElementById('offdayList');
   el.innerHTML='';
   const sorted=Object.keys(offdays).sort();
+  const btn=document.getElementById('offdayToggle');
+  if(btn){
+    btn.style.display=sorted.length?'inline-flex':'none';
+    const count=sorted.length;
+    btn.textContent=(offdayListOpen?'▲ 목록 숨기기':'▼ 목록 보기')+` (${count})`;
+  }
   sorted.forEach(ds=>{
     const tag=document.createElement('div');tag.className='offday-tag';
-    tag.innerHTML=`<span>${ds}</span><span style="color:#aaa;margin:0 2px">·</span><span>${offdays[ds]}</span><span class="tag-remove" onclick="removeOffday('${ds}')">×</span>`;
+    const lbl=typeof offdays[ds]==='string'?offdays[ds]:offdays[ds].label||'휴무';
+    tag.innerHTML=`<span>${ds}</span><span style="color:#aaa;margin:0 2px">·</span><span>${lbl}</span><span class="tag-remove" onclick="removeOffday('${ds}')">×</span>`;
     el.appendChild(tag);
   });
 }
