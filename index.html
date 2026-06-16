@@ -11,53 +11,81 @@
 body{background:#f8f8f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;color:#1a1a1a;min-height:100vh}
 .page-wrap{max-width:800px;margin:0 auto;padding:2rem 1.5rem}
 h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.25rem}
-.subtitle{font-size:13px;color:#888;margin-bottom:2rem}
+.subtitle{font-size:13px;color:#888;margin-bottom:1.5rem}
+
+/* 일감 목록 접기 */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.section-title{font-size:12px;font-weight:500;color:#888;letter-spacing:0.02em}
+.btn-collapse{background:transparent;border:0.5px solid #d0d0cc;border-radius:6px;padding:3px 10px;font-size:11px;color:#888;cursor:pointer;display:flex;align-items:center;gap:4px}
+.btn-collapse:hover{background:#f0f0ee;color:#333}
+.collapsible{overflow:hidden;transition:max-height 0.25s ease,opacity 0.2s ease;max-height:600px;opacity:1}
+.collapsible.collapsed{max-height:0;opacity:0;pointer-events:none}
+
 .header-row{display:grid;grid-template-columns:90px minmax(0,1fr) 100px 110px 110px 36px;gap:8px;margin-bottom:4px}
 .col-label{font-size:11px;color:#aaa;text-align:center}
 .job-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
 .job-row{display:grid;grid-template-columns:90px minmax(0,1fr) 100px 110px 110px 36px;gap:8px;align-items:center}
 .job-row input,.job-row select{font-size:13px;padding:0 8px;height:34px;border:0.5px solid #d0d0cc;border-radius:7px;background:#fff;color:#1a1a1a;width:100%}
-.job-row input[type=date]{font-size:11px;padding:0 4px;letter-spacing:-0.02em;font-family:"Noto Sans KR","Noto Sans",sans-serif}
+.job-row input[type=date]{font-size:11px;padding:0 4px;letter-spacing:-0.02em;font-family:'Noto Sans KR','Noto Sans',sans-serif}
 .job-row input:focus,.job-row select:focus{outline:none;border-color:#999}
 .btn-remove{width:34px;height:34px;border:0.5px solid #d0d0cc;border-radius:7px;background:transparent;cursor:pointer;color:#aaa;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .btn-remove:hover{background:#fef2f2;color:#c0392b;border-color:#f5c6c6}
 .btn-remove:disabled{opacity:0.3;cursor:not-allowed}
-.btn-add{display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;color:#888;background:transparent;border:0.5px dashed #ccc;border-radius:7px;padding:8px;cursor:pointer;width:100%;margin-bottom:1.5rem}
+.btn-add{display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;color:#888;background:transparent;border:0.5px dashed #ccc;border-radius:7px;padding:8px;cursor:pointer;width:100%;margin-bottom:1.25rem}
 .btn-add:hover{background:#f5f5f3;color:#333}
-.section-label{font-size:12px;font-weight:500;color:#888;margin-bottom:8px;letter-spacing:0.02em}
-.mode-toggle{display:flex;border:0.5px solid #d0d0cc;border-radius:7px;overflow:hidden;margin-bottom:0.5rem;width:fit-content}
-.mode-btn{padding:7px 18px;font-size:13px;background:transparent;border:none;cursor:pointer;color:#888;display:flex;align-items:center;gap:5px}
-.mode-btn.active{background:#f0f0ee;color:#1a1a1a;font-weight:500}
-.mode-btn:not(:last-child){border-right:0.5px solid #d0d0cc}
-.mode-hint{font-size:12px;color:#aaa;margin-bottom:1.5rem}
+
+/* 옵션 행 */
+.options-row{display:flex;gap:1.5rem;margin-bottom:1.25rem;flex-wrap:wrap}
+.option-group{display:flex;flex-direction:column;gap:6px}
+.option-group .section-label{font-size:12px;font-weight:500;color:#888;letter-spacing:0.02em}
+.toggle-group{display:flex;border:0.5px solid #d0d0cc;border-radius:7px;overflow:hidden;width:fit-content}
+.tog-btn{padding:6px 14px;font-size:12px;background:transparent;border:none;cursor:pointer;color:#888}
+.tog-btn.active{background:#f0f0ee;color:#1a1a1a;font-weight:500}
+.tog-btn:not(:last-child){border-right:0.5px solid #d0d0cc}
+.mode-hint{font-size:11px;color:#bbb;margin-top:2px}
+
 .btn-row{display:flex;gap:8px;margin-bottom:1.5rem}
 .btn-calc{background:#1a1a1a;border:none;border-radius:7px;font-size:13px;font-weight:500;padding:8px 16px;cursor:pointer;color:#fff;flex:1}
 .btn-calc:hover{background:#333}
 .btn-dl{background:transparent;border:0.5px solid #d0d0cc;border-radius:7px;font-size:13px;padding:8px 16px;cursor:pointer;color:#666;display:flex;align-items:center;gap:5px;flex:1;justify-content:center}
 .btn-dl:hover{background:#f5f5f3;color:#1a1a1a}
+.error{font-size:12px;color:#c0392b;margin-bottom:0.75rem;display:none}
+
 .divider{border:none;border-top:0.5px solid #e8e8e6;margin:1.5rem 0}
 .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.5rem}
 .metric{background:#fff;border:0.5px solid #e8e8e6;border-radius:8px;padding:12px}
 .metric-label{font-size:11px;color:#aaa;margin-bottom:4px}
 .metric-val{font-size:18px;font-weight:500;color:#1a1a1a}
+
 .calendar-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .cal-nav{background:transparent;border:0.5px solid #d8d8d6;border-radius:7px;width:30px;height:30px;cursor:pointer;font-size:16px;color:#666;display:flex;align-items:center;justify-content:center}
 .cal-nav:hover{background:#f0f0ee}
 .cal-month-label{font-size:14px;font-weight:500;color:#1a1a1a}
 .cal-wrap{overflow-x:auto}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;min-width:500px}
-.cal-day-header{font-size:11px;color:#bbb;text-align:center;padding:4px 0}
-.cal-cell{min-height:70px;border:0.5px solid #e8e8e6;border-radius:5px;padding:4px;background:#fff;overflow:hidden}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:0;min-width:500px}
+.cal-day-header{font-size:11px;color:#bbb;text-align:center;padding:4px 0;border:0.5px solid transparent}
+.cal-day-header.weekend{color:#e07070}
+.cal-cell{min-height:70px;border:0.5px solid #e8e8e6;padding:4px;background:#fff;overflow:hidden;position:relative}
 .cal-cell.other-month{background:#f8f8f6}
-.cal-cell.today{border-color:#4a90d9}
+.cal-cell.today{border-color:#4a90d9;z-index:1}
+.cal-cell.weekend-day{background:#fdfafa}
+.cal-cell.skipped-day{background:#f5f5f3}
 .cal-date{font-size:11px;color:#bbb;margin-bottom:2px}
 .cal-cell.today .cal-date{color:#4a90d9;font-weight:500}
-.bar{height:14px;border-radius:3px;font-size:10px;line-height:14px;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
-.bar.start{border-radius:3px 0 0 3px}.bar.end{border-radius:0 3px 3px 0}.bar.mid{border-radius:0}.bar.single{border-radius:3px}
+.cal-cell.weekend-day .cal-date{color:#e07070}
+.cal-cell.skipped-day .cal-date{color:#ccc}
+
+/* 막대: 좌우 끝 여백 없이 셀 끝까지 늘어남 */
+.bar{height:15px;font-size:10px;line-height:15px;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;border-top:0.5px solid transparent;border-bottom:0.5px solid transparent}
+.bar.single{border-radius:3px;border:0.5px solid transparent;margin:0 0 2px 0}
+.bar.start{border-radius:3px 0 0 3px;margin-left:0;margin-right:-4px;padding-right:0;border-right:none}
+.bar.mid{border-radius:0;margin-left:-4px;margin-right:-4px;padding:0;border-left:none;border-right:none}
+.bar.end{border-radius:0 3px 3px 0;margin-left:-4px;padding-left:0;border-left:none}
+.bar.start-end-same{border-radius:3px;margin:0 0 2px 0}
+
 .legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
 .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#666}
 .legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
-.error{font-size:12px;color:#c0392b;margin-bottom:0.75rem;display:none}
 </style>
 </head>
 <body>
@@ -65,23 +93,43 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.25rem}
   <h1>번역 검수 작업 스케줄러</h1>
   <p class="subtitle">일감별 우선순위·분량·기간을 입력하면 작업 순서와 달력 배분을 산출합니다.</p>
 
-  <div class="header-row">
-    <div class="col-label">우선순위</div>
-    <div class="col-label">일감 이름</div>
-    <div class="col-label">분량 (단어)</div>
-    <div class="col-label">작업개시일</div>
-    <div class="col-label">마감일</div>
-    <div></div>
+  <!-- 일감 목록 -->
+  <div class="section-header">
+    <span class="section-title">일감 목록</span>
+    <button class="btn-collapse" id="btnCollapse" onclick="toggleCollapse()">▲ 접기</button>
   </div>
-  <div class="job-list" id="jobList"></div>
-  <button class="btn-add" id="btnAdd" onclick="addJob()">＋ 일감 추가 (최대 10개)</button>
+  <div class="collapsible" id="jobSection">
+    <div class="header-row">
+      <div class="col-label">우선순위</div>
+      <div class="col-label">일감 이름</div>
+      <div class="col-label">분량 (단어)</div>
+      <div class="col-label">작업개시일</div>
+      <div class="col-label">마감일</div>
+      <div></div>
+    </div>
+    <div class="job-list" id="jobList"></div>
+    <button class="btn-add" id="btnAdd" onclick="addJob()">＋ 일감 추가 (최대 10개)</button>
+  </div>
 
-  <div class="section-label">작업 방식</div>
-  <div class="mode-toggle">
-    <button class="mode-btn active" id="btnSeq" onclick="setMode('sequential')">→ 순차 우선</button>
-    <button class="mode-btn" id="btnPar" onclick="setMode('parallel')">⇉ 병렬 우선</button>
+  <!-- 옵션 -->
+  <div class="options-row">
+    <div class="option-group">
+      <div class="section-label">작업 방식</div>
+      <div class="toggle-group">
+        <button class="tog-btn active" id="btnSeq" onclick="setMode('sequential')">→ 순차</button>
+        <button class="tog-btn" id="btnPar" onclick="setMode('parallel')">⇉ 병렬</button>
+      </div>
+    </div>
+    <div class="option-group">
+      <div class="section-label">주말 처리</div>
+      <div class="toggle-group">
+        <button class="tog-btn active" id="wkAll" onclick="setWeekend('all')">전체 포함</button>
+        <button class="tog-btn" id="wkNo" onclick="setWeekend('none')">주말 제외</button>
+        <button class="tog-btn" id="wkNoSun" onclick="setWeekend('noSun')">일요일 제외</button>
+        <button class="tog-btn" id="wkNoSat" onclick="setWeekend('noSat')">토요일 제외</button>
+      </div>
+    </div>
   </div>
-  <p class="mode-hint" id="modeHint">우선순위 순서대로 한 번에 하나씩 집중해서 처리합니다.</p>
 
   <div class="error" id="errMsg"></div>
   <div class="btn-row">
@@ -118,17 +166,66 @@ const COLORS=[
 const DAY_KO=['일','월','화','수','목','금','토'];
 const MONTH_KO=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 
-let jobs=[], scheduleData=[], calYear, calMonth, mode='sequential';
+let jobs=[], scheduleData=[], calYear, calMonth;
+let mode='sequential';
+let weekendMode='all'; // all | none | noSun | noSat
+let jobSectionOpen=true;
 
-function setMode(m){
-  mode=m;
-  document.getElementById('btnSeq').className='mode-btn'+(m==='sequential'?' active':'');
-  document.getElementById('btnPar').className='mode-btn'+(m==='parallel'?' active':'');
-  document.getElementById('modeHint').textContent=m==='sequential'
-    ?'우선순위 순서대로 한 번에 하나씩 집중해서 처리합니다.'
-    :'모든 일감을 기간 내에 동시에 병행하며, 우선순위가 높을수록 하루 분량을 더 많이 배분합니다.';
+/* ── 접기 ── */
+function toggleCollapse(){
+  jobSectionOpen=!jobSectionOpen;
+  const sec=document.getElementById('jobSection');
+  const btn=document.getElementById('btnCollapse');
+  sec.classList.toggle('collapsed',!jobSectionOpen);
+  btn.textContent=jobSectionOpen?'▲ 접기':'▼ 펼치기';
 }
 
+/* ── 작업 방식 ── */
+function setMode(m){
+  mode=m;
+  ['btnSeq','btnPar'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  document.getElementById(m==='sequential'?'btnSeq':'btnPar').classList.add('active');
+}
+
+/* ── 주말 처리 ── */
+function setWeekend(w){
+  weekendMode=w;
+  ['wkAll','wkNo','wkNoSun','wkNoSat'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  const map={all:'wkAll',none:'wkNo',noSun:'wkNoSun',noSat:'wkNoSat'};
+  document.getElementById(map[w]).classList.add('active');
+}
+
+function isWorkDay(dateStr){
+  const d=new Date(dateStr);
+  const dow=d.getDay(); // 0=일,6=토
+  if(weekendMode==='none'&&(dow===0||dow===6))return false;
+  if(weekendMode==='noSun'&&dow===0)return false;
+  if(weekendMode==='noSat'&&dow===6)return false;
+  return true;
+}
+
+function isSkippedWeekend(dateStr){
+  const d=new Date(dateStr);const dow=d.getDay();
+  if(weekendMode==='none'&&(dow===0||dow===6))return true;
+  if(weekendMode==='noSun'&&dow===0)return true;
+  if(weekendMode==='noSat'&&dow===6)return true;
+  return false;
+}
+
+/* 두 날짜 사이 실제 작업일 수 */
+function workDaysBetween(a,b){
+  let count=0;
+  const cur=new Date(a);
+  const end=new Date(b);
+  while(cur<=end){
+    const ds=dateStr(cur.getFullYear(),cur.getMonth(),cur.getDate());
+    if(isWorkDay(ds))count++;
+    cur.setDate(cur.getDate()+1);
+  }
+  return count;
+}
+
+/* ── 날짜 유틸 ── */
 function todayStr(){
   const t=new Date();
   return`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
@@ -138,8 +235,10 @@ function offsetDate(base,days){
   return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function daysBetween(a,b){return Math.round((new Date(b)-new Date(a))/86400000)}
+function dateStr(y,m,d){return`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}
 function jobTemplate(id){const s=todayStr();return{id,name:'',words:'',start:s,end:offsetDate(s,6),priority:'2'};}
 
+/* ── 일감 CRUD ── */
 function addJob(){
   if(jobs.length>=10)return;
   jobs.push(jobTemplate(Date.now()));renderJobs();
@@ -151,7 +250,6 @@ function removeJob(id){
 function updateJob(id,field,val){
   const j=jobs.find(j=>j.id===id);if(j)j[field]=val;
 }
-
 function renderJobs(){
   const list=document.getElementById('jobList');list.innerHTML='';
   jobs.forEach(j=>{
@@ -180,6 +278,7 @@ function showError(msg){
   setTimeout(()=>{el.style.display='none';},4000);
 }
 
+/* ── 산출 ── */
 function calculate(){
   for(const j of jobs){
     if(!j.name.trim())return showError('모든 일감의 이름을 입력해주세요.');
@@ -206,69 +305,127 @@ function calcSequential(sorted){
     const words=parseInt(j.words);
     let schedStart=(!cursor||j.start>cursor)?j.start:cursor;
     if(schedStart>j.end)schedStart=j.start;
-    const days=Math.max(1,daysBetween(schedStart,j.end)+1);
+    const wdays=Math.max(1,workDaysBetween(schedStart,j.end));
     cursor=offsetDate(j.end,1);
-    return{...j,colorIdx:idx%COLORS.length,sortOrder:idx+1,schedStart,schedEnd:j.end,days,wordsPerDay:Math.ceil(words/days),words};
+    return{...j,colorIdx:idx%COLORS.length,sortOrder:idx+1,schedStart,schedEnd:j.end,workDays:wdays,wordsPerDay:Math.ceil(words/wdays),words};
   });
 }
 function calcParallel(sorted){
   return sorted.map((j,idx)=>{
     const words=parseInt(j.words);
-    const days=Math.max(1,daysBetween(j.start,j.end)+1);
-    return{...j,colorIdx:idx%COLORS.length,sortOrder:idx+1,schedStart:j.start,schedEnd:j.end,days,wordsPerDay:Math.ceil(words/days),words};
+    const wdays=Math.max(1,workDaysBetween(j.start,j.end));
+    return{...j,colorIdx:idx%COLORS.length,sortOrder:idx+1,schedStart:j.start,schedEnd:j.end,workDays:wdays,wordsPerDay:Math.ceil(words/wdays),words};
   });
 }
 
-function dateStr(y,m,d){return`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}
-
+/* ── 요약 ── */
 function renderSummary(){
   const total=scheduleData.reduce((s,j)=>s+j.words,0);
   const maxEnd=scheduleData.reduce((a,b)=>a.schedEnd>b.schedEnd?a:b).schedEnd;
   const minStart=scheduleData.reduce((a,b)=>a.schedStart<b.schedStart?a:b).schedStart;
   const span=daysBetween(minStart,maxEnd)+1;
+  const wkLabel={all:'전체 포함',none:'주말 제외',noSun:'일요일 제외',noSat:'토요일 제외'}[weekendMode];
   document.getElementById('summaryGrid').innerHTML=`
-    <div class="metric"><div class="metric-label">작업 방식</div><div class="metric-val" style="font-size:14px">${mode==='sequential'?'순차 우선':'병렬 우선'}</div></div>
+    <div class="metric"><div class="metric-label">작업 방식</div><div class="metric-val" style="font-size:13px">${mode==='sequential'?'순차 우선':'병렬 우선'} · ${wkLabel}</div></div>
     <div class="metric"><div class="metric-label">총 일감 수</div><div class="metric-val">${scheduleData.length}개</div></div>
     <div class="metric"><div class="metric-label">총 분량</div><div class="metric-val">${total.toLocaleString()}<span style="font-size:12px;font-weight:400;color:#aaa"> 단어</span></div></div>
     <div class="metric"><div class="metric-label">전체 기간</div><div class="metric-val">${span}<span style="font-size:12px;font-weight:400;color:#aaa"> 일</span></div></div>
   `;
 }
 
+/* ── 달력 ── */
 function renderCalendar(){
   document.getElementById('calMonthLabel').textContent=`${calYear}년 ${MONTH_KO[calMonth]}`;
   const grid=document.getElementById('calGrid');grid.innerHTML='';
-  DAY_KO.forEach(d=>{const h=document.createElement('div');h.className='cal-day-header';h.textContent=d;grid.appendChild(h);});
+
+  DAY_KO.forEach((d,i)=>{
+    const h=document.createElement('div');
+    h.className='cal-day-header'+(i===0||i===6?' weekend':'');
+    h.textContent=d;grid.appendChild(h);
+  });
+
   const firstDay=new Date(calYear,calMonth,1).getDay();
   const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
   const prevDays=new Date(calYear,calMonth,0).getDate();
   const today=new Date();today.setHours(0,0,0,0);
   const totalCells=Math.ceil((firstDay+daysInMonth)/7)*7;
+
+  /* 각 셀 정보 먼저 계산 */
+  const cells=[];
   for(let i=0;i<totalCells;i++){
-    const cell=document.createElement('div');cell.className='cal-cell';
-    let y=calYear,m=calMonth,d;
-    if(i<firstDay){d=prevDays-firstDay+i+1;m=calMonth-1;if(m<0){m=11;y--;}cell.classList.add('other-month');}
-    else if(i>=firstDay+daysInMonth){d=i-firstDay-daysInMonth+1;m=calMonth+1;if(m>11){m=0;y++;}cell.classList.add('other-month');}
+    let y=calYear,m=calMonth,d,other=false;
+    if(i<firstDay){d=prevDays-firstDay+i+1;m=calMonth-1;if(m<0){m=11;y--;}other=true;}
+    else if(i>=firstDay+daysInMonth){d=i-firstDay-daysInMonth+1;m=calMonth+1;if(m>11){m=0;y++;}other=true;}
     else{d=i-firstDay+1;}
-    const ds=dateStr(y,m,d);
-    if(new Date(y,m,d).getTime()===today.getTime())cell.classList.add('today');
-    const dd=document.createElement('div');dd.className='cal-date';dd.textContent=d;cell.appendChild(dd);
-    scheduleData.forEach(j=>{
-      if(ds>=j.schedStart&&ds<=j.schedEnd){
-        const c=COLORS[j.colorIdx];
-        const bar=document.createElement('div');bar.className='bar';
-        if(ds===j.schedStart&&ds===j.schedEnd)bar.classList.add('single');
-        else if(ds===j.schedStart)bar.classList.add('start');
-        else if(ds===j.schedEnd)bar.classList.add('end');
-        else bar.classList.add('mid');
-        bar.style.cssText=`background:${c.bg};color:${c.text};border:0.5px solid ${c.border}`;
-        if(ds===j.schedStart) bar.textContent=`${j.name} (${j.wordsPerDay.toLocaleString()})`;
-        else bar.textContent=j.wordsPerDay.toLocaleString();
-        bar.title=`${j.name} | 하루 약 ${j.wordsPerDay.toLocaleString()} 단어`;
-        cell.appendChild(bar);
-      }
-    });
-    grid.appendChild(cell);
+    cells.push({y,m,d,ds:dateStr(y,m,d),other,dow:new Date(y,m,d).getDay(),col:i%7});
   }
+
+  cells.forEach((ci,i)=>{
+    const cell=document.createElement('div');
+    let cls='cal-cell';
+    if(ci.other)cls+=' other-month';
+    if(new Date(ci.y,ci.m,ci.d).getTime()===today.getTime())cls+=' today';
+    if(!ci.other&&(ci.dow===0||ci.dow===6))cls+=' weekend-day';
+    if(isSkippedWeekend(ci.ds))cls+=' skipped-day';
+    cell.className=cls;
+
+    const dd=document.createElement('div');dd.className='cal-date';dd.textContent=ci.d;cell.appendChild(dd);
+
+    if(!isSkippedWeekend(ci.ds)){
+      scheduleData.forEach(j=>{
+        if(ci.ds>=j.schedStart&&ci.ds<=j.schedEnd){
+          const c=COLORS[j.colorIdx];
+
+          /* 이 셀 기준으로 막대의 위치 파악 */
+          /* 실제 시작/끝인지, 아니면 주 경계인지 */
+          const isJobStart=ci.ds===j.schedStart;
+          const isJobEnd=ci.ds===j.schedEnd;
+          const isWeekStart=ci.col===0; // 일요일 열
+          const isWeekEnd=ci.col===6;   // 토요일 열
+
+          /* 셀 기준 시각적 시작/끝 */
+          const visStart=isJobStart||isWeekStart;
+          const visEnd=isJobEnd||isWeekEnd;
+
+          const bar=document.createElement('div');
+          let barCls='bar';
+          if(visStart&&visEnd) barCls+=' single';
+          else if(visStart)    barCls+=' start';
+          else if(visEnd)      barCls+=' end';
+          else                 barCls+=' mid';
+          bar.className=barCls;
+
+          /* 시각적 시작 셀에만 테두리/배경 모두, mid/end는 상하만 */
+          bar.style.background=c.bg;
+          bar.style.color=c.text;
+          if(visStart&&visEnd){
+            bar.style.border=`0.5px solid ${c.border}`;
+          } else if(visStart){
+            bar.style.borderTop=`0.5px solid ${c.border}`;
+            bar.style.borderBottom=`0.5px solid ${c.border}`;
+            bar.style.borderLeft=`0.5px solid ${c.border}`;
+            bar.style.borderRight='none';
+          } else if(visEnd){
+            bar.style.borderTop=`0.5px solid ${c.border}`;
+            bar.style.borderBottom=`0.5px solid ${c.border}`;
+            bar.style.borderRight=`0.5px solid ${c.border}`;
+            bar.style.borderLeft='none';
+          } else {
+            bar.style.borderTop=`0.5px solid ${c.border}`;
+            bar.style.borderBottom=`0.5px solid ${c.border}`;
+            bar.style.borderLeft='none';
+            bar.style.borderRight='none';
+          }
+
+          /* 텍스트: 시각적 시작이면 이름+단어수, 아니면 단어수만 */
+          bar.textContent=visStart?`${j.name} (${j.wordsPerDay.toLocaleString()})`:j.wordsPerDay.toLocaleString();
+          bar.title=`${j.name} | 하루 약 ${j.wordsPerDay.toLocaleString()} 단어`;
+          cell.appendChild(bar);
+        }
+      });
+    }
+    grid.appendChild(cell);
+  });
 }
 
 function renderLegend(){
@@ -277,7 +434,7 @@ function renderLegend(){
     const c=COLORS[j.colorIdx];
     const pLabel=j.priority==='1'?'높음':j.priority==='2'?'보통':'낮음';
     const item=document.createElement('div');item.className='legend-item';
-    item.innerHTML=`<span class="legend-dot" style="background:${c.bg};border:0.5px solid ${c.border}"></span><span>${j.sortOrder}순위 · <strong>${j.name}</strong> (${j.words.toLocaleString()}단어 · ${pLabel} · ${j.schedStart} ~ ${j.schedEnd})</span>`;
+    item.innerHTML=`<span class="legend-dot" style="background:${c.bg};border:0.5px solid ${c.border}"></span><span>${j.sortOrder}순위 · <strong>${j.name}</strong> (${j.words.toLocaleString()}단어 · ${pLabel} · ${j.schedStart} ~ ${j.schedEnd} · 작업일 ${j.workDays}일)</span>`;
     leg.appendChild(item);
   });
 }
@@ -295,8 +452,8 @@ function downloadSelf(){
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url;
-  const today=new Date();
-  const ds=`${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}`;
+  const t=new Date();
+  const ds=`${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}`;
   a.download=`번역검수스케줄러_${ds}.html`;
   document.body.appendChild(a);a.click();
   document.body.removeChild(a);URL.revokeObjectURL(url);
