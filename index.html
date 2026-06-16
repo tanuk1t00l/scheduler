@@ -46,14 +46,14 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.25rem}
 .mode-hint{font-size:11px;color:#bbb;margin-top:2px}
 
 .btn-row{display:flex;gap:8px;margin-bottom:1.5rem;margin-top:2rem}
-.btn-calc{background:#1a1a1a;border:none;border-radius:7px;font-size:13px;font-weight:500;padding:8px 16px;cursor:pointer;color:#fff;flex:1}
+.btn-calc{background:#1a1a1a;border:none;border-radius:7px;font-size:13px;font-weight:500;padding:10px 24px;cursor:pointer;color:#fff}
 .btn-calc:hover{background:#333}
-.btn-dl{background:transparent;border:0.5px solid #d0d0cc;border-radius:7px;font-size:13px;padding:8px 16px;cursor:pointer;color:#666;display:flex;align-items:center;gap:5px;flex:1;justify-content:center}
+.btn-dl{background:transparent;border:0.5px solid #d0d0cc;border-radius:7px;font-size:13px;padding:10px 24px;cursor:pointer;color:#666;display:flex;align-items:center;gap:5px;justify-content:center}
 .btn-dl:hover{background:#f5f5f3;color:#1a1a1a}
 .error{font-size:12px;color:#c0392b;margin-bottom:0.75rem;display:none}
 .memo-wrap{margin-top:2rem;border-top:0.5px solid #e8e8e6;padding-top:1.5rem}
 .memo-wrap .section-title{font-size:12px;font-weight:500;color:#888;letter-spacing:0.02em;display:block;margin-bottom:8px}
-.memo-box{width:100%;min-height:120px;resize:vertical;border:0.5px solid #d0d0cc;border-radius:7px;padding:10px 12px;font-size:13px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;color:#1a1a1a;background:#fff;line-height:1.6;outline:none}
+.memo-box{width:100%;min-height:120px;resize:vertical;border:0.5px solid #d0d0cc;border-radius:7px;padding:10px 12px;font-size:13px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;color:#1a1a1a;background:#fff;line-height:1.6;outline:none;box-sizing:border-box;display:block}
 .memo-box:focus{border-color:#999}
 .memo-saved{font-size:11px;color:#bbb;text-align:right;margin-top:4px;min-height:16px}
 
@@ -145,7 +145,7 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.25rem}
     <button class="btn-add" id="btnAdd" onclick="addJob()">＋ 일감 추가 (최대 10개)</button>
   </div>
 
-  <!-- 옵션 1행: 작업 방식 + 하루 작업량 + 휴무일 설정 -->
+  <!-- 옵션 1행: 작업방식 | 하루작업량 | 주말처리 -->
   <div class="options-row" style="align-items:flex-start;margin-bottom:0.5rem">
     <div class="option-group">
       <div class="section-label">작업 방식</div>
@@ -162,27 +162,6 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.25rem}
           oninput="updateDailyCap(this.value)">
       </div>
     </div>
-    <div class="offday-section option-group">
-      <div class="section-label">휴무일 설정 <span style="font-size:11px;font-weight:400;color:#bbb">(공휴일·휴가 등 작업 불가 날짜)</span></div>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-        <div class="offday-type-row" style="margin-bottom:0">
-          <button class="offday-type-btn active" id="odSingle" onclick="setOffdayType('single')">단일 날짜</button>
-          <button class="offday-type-btn" id="odRange" onclick="setOffdayType('range')">기간</button>
-        </div>
-        <div class="offday-input-row" id="offdayInputRow" style="margin-bottom:0">
-        <input type="date" id="offdayDate">
-        <input type="text" id="offdayLabel" placeholder="메모 (예: 추석)" maxlength="20">
-        <button class="btn-offday-add" onclick="addOffday()">추가</button>
-      </div>
-      <div class="offday-list-wrap">
-        <button class="offday-list-toggle" id="offdayToggle" onclick="toggleOffdayList()" style="display:none">▼ 목록 보기 (0)</button>
-        <div class="offday-list hidden" id="offdayList"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 옵션 2행: 주말 처리 + 달력 표시 -->
-  <div class="options-row">
     <div class="option-group">
       <div class="section-label">주말 처리</div>
       <div class="toggle-group">
@@ -192,11 +171,31 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.25rem}
         <button class="tog-btn" id="wkNoSat" onclick="setWeekend('noSat')">토요일 제외</button>
       </div>
     </div>
+  </div>
+
+  <!-- 옵션 2행: 달력표시 | 휴무일설정 -->
+  <div class="options-row" style="align-items:flex-start">
     <div class="option-group">
       <div class="section-label">달력 표시</div>
       <div class="toggle-group">
         <button class="tog-btn active" id="calView1" onclick="setCalView(1)">1개월</button>
         <button class="tog-btn" id="calView2" onclick="setCalView(2)">2개월</button>
+      </div>
+    </div>
+    <div class="offday-section option-group">
+      <div class="section-label">휴무일 설정 <span style="font-size:11px;font-weight:400;color:#bbb">(공휴일·휴가 등 작업 불가 날짜)</span></div>
+      <div class="offday-input-row" id="offdayInputRow" style="align-items:center;margin-bottom:4px">
+        <div class="offday-type-row" style="margin-bottom:0;flex-shrink:0">
+          <button class="offday-type-btn active" id="odSingle" onclick="setOffdayType('single')">단일 날짜</button>
+          <button class="offday-type-btn" id="odRange" onclick="setOffdayType('range')">기간</button>
+        </div>
+        <input type="date" id="offdayDate">
+        <input type="text" id="offdayLabel" placeholder="메모 (예: 추석)" maxlength="20">
+        <button class="btn-offday-add" onclick="addOffday()">추가</button>
+      </div>
+      <div class="offday-list-wrap">
+        <button class="offday-list-toggle" id="offdayToggle" onclick="toggleOffdayList()" style="display:none">▼ 목록 보기 (0)</button>
+        <div class="offday-list hidden" id="offdayList"></div>
       </div>
     </div>
   </div>
