@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>번역 검수 작업 스케줄러</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f8f8f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;color:#1a1a1a;min-height:100vh}
+.page-wrap{max-width:800px;margin:0 auto;padding:2rem 1.5rem}
+h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.25rem}
+.subtitle{font-size:13px;color:#888;margin-bottom:2rem}
+.header-row{display:grid;grid-template-columns:90px minmax(0,1fr) 100px 110px 110px 36px;gap:8px;margin-bottom:4px}
+.col-label{font-size:11px;color:#aaa;text-align:center}
+.job-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
+.job-row{display:grid;grid-template-columns:90px minmax(0,1fr) 100px 110px 110px 36px;gap:8px;align-items:center}
+.job-row input,.job-row select{font-size:13px;padding:0 8px;height:34px;border:0.5px solid #d0d0cc;border-radius:7px;background:#fff;color:#1a1a1a;width:100%}
+.job-row input:focus,.job-row select:focus{outline:none;border-color:#999}
+.btn-remove{width:34px;height:34px;border:0.5px solid #d0d0cc;border-radius:7px;background:transparent;cursor:pointer;color:#aaa;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.btn-remove:hover{background:#fef2f2;color:#c0392b;border-color:#f5c6c6}
+.btn-remove:disabled{opacity:0.3;cursor:not-allowed}
+.btn-add{display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;color:#888;background:transparent;border:0.5px dashed #ccc;border-radius:7px;padding:8px;cursor:pointer;width:100%;margin-bottom:1.5rem}
+.btn-add:hover{background:#f5f5f3;color:#333}
+.section-label{font-size:12px;font-weight:500;color:#888;margin-bottom:8px;letter-spacing:0.02em}
+.mode-toggle{display:flex;border:0.5px solid #d0d0cc;border-radius:7px;overflow:hidden;margin-bottom:0.5rem;width:fit-content}
+.mode-btn{padding:7px 18px;font-size:13px;background:transparent;border:none;cursor:pointer;color:#888;display:flex;align-items:center;gap:5px}
+.mode-btn.active{background:#f0f0ee;color:#1a1a1a;font-weight:500}
+.mode-btn:not(:last-child){border-right:0.5px solid #d0d0cc}
+.mode-hint{font-size:12px;color:#aaa;margin-bottom:1.5rem}
+.btn-row{display:flex;gap:8px;margin-bottom:1.5rem}
+.btn-calc{background:#1a1a1a;border:none;border-radius:7px;font-size:13px;font-weight:500;padding:8px 16px;cursor:pointer;color:#fff;flex:1}
+.btn-calc:hover{background:#333}
+.btn-dl{background:transparent;border:0.5px solid #d0d0cc;border-radius:7px;font-size:13px;padding:8px 16px;cursor:pointer;color:#666;display:flex;align-items:center;gap:5px;flex:1;justify-content:center}
+.btn-dl:hover{background:#f5f5f3;color:#1a1a1a}
+.divider{border:none;border-top:0.5px solid #e8e8e6;margin:1.5rem 0}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.5rem}
+.metric{background:#fff;border:0.5px solid #e8e8e6;border-radius:8px;padding:12px}
+.metric-label{font-size:11px;color:#aaa;margin-bottom:4px}
+.metric-val{font-size:18px;font-weight:500;color:#1a1a1a}
+.calendar-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-nav{background:transparent;border:0.5px solid #d8d8d6;border-radius:7px;width:30px;height:30px;cursor:pointer;font-size:16px;color:#666;display:flex;align-items:center;justify-content:center}
+.cal-nav:hover{background:#f0f0ee}
+.cal-month-label{font-size:14px;font-weight:500;color:#1a1a1a}
+.cal-wrap{overflow-x:auto}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;min-width:500px}
+.cal-day-header{font-size:11px;color:#bbb;text-align:center;padding:4px 0}
+.cal-cell{min-height:70px;border:0.5px solid #e8e8e6;border-radius:5px;padding:4px;background:#fff;overflow:hidden}
+.cal-cell.other-month{background:#f8f8f6}
+.cal-cell.today{border-color:#4a90d9}
+.cal-date{font-size:11px;color:#bbb;margin-bottom:2px}
+.cal-cell.today .cal-date{color:#4a90d9;font-weight:500}
+.bar{height:14px;border-radius:3px;font-size:10px;line-height:14px;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.bar.start{border-radius:3px 0 0 3px}.bar.end{border-radius:0 3px 3px 0}.bar.mid{border-radius:0}.bar.single{border-radius:3px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#666}
+.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.error{font-size:12px;color:#c0392b;margin-bottom:0.75rem;display:none}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <h1>번역 검수 작업 스케줄러</h1>
+  <p class="subtitle">일감별 우선순위·분량·기간을 입력하면 작업 순서와 달력 배분을 산출합니다.</p>
+
+  <div class="header-row">
+    <div class="col-label">우선순위</div>
+    <div class="col-label">일감 이름</div>
+    <div class="col-label">분량 (단어)</div>
+    <div class="col-label">작업개시일</div>
+    <div class="col-label">마감일</div>
+    <div></div>
+  </div>
+  <div class="job-list" id="jobList"></div>
+  <button class="btn-add" id="btnAdd" onclick="addJob()">＋ 일감 추가 (최대 10개)</button>
+
+  <div class="section-label">작업 방식</div>
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="btnSeq" onclick="setMode('sequential')">→ 순차 우선</button>
+    <button class="mode-btn" id="btnPar" onclick="setMode('parallel')">⇉ 병렬 우선</button>
+  </div>
+  <p class="mode-hint" id="modeHint">우선순위 순서대로 한 번에 하나씩 집중해서 처리합니다.</p>
+
+  <div class="error" id="errMsg"></div>
+  <div class="btn-row">
+    <button class="btn-calc" onclick="calculate()">스케줄 산출하기</button>
+    <button class="btn-dl" onclick="downloadSelf()">↓ HTML로 저장</button>
+  </div>
+
+  <div id="resultArea" style="display:none">
+    <hr class="divider">
+    <div class="summary-grid" id="summaryGrid"></div>
+    <div class="calendar-header">
+      <button class="cal-nav" onclick="changeMonth(-1)">‹</button>
+      <span class="cal-month-label" id="calMonthLabel"></span>
+      <button class="cal-nav" onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="cal-wrap"><div class="cal-grid" id="calGrid"></div></div>
+    <div class="legend" id="legend"></div>
+  </div>
+</div>
+
+<script>
+const COLORS=[
+  {bg:'#E6F1FB',text:'#185FA5',border:'#B5D4F4'},
+  {bg:'#E1F5EE',text:'#0F6E56',border:'#9FE1CB'},
+  {bg:'#FAEEDA',text:'#854F0B',border:'#FAC775'},
+  {bg:'#EEEDFE',text:'#534AB7',border:'#CECBF6'},
+  {bg:'#FBEAF0',text:'#993556',border:'#F4C0D1'},
+  {bg:'#EAF3DE',text:'#3B6D11',border:'#C0DD97'},
+  {bg:'#FCEBEB',text:'#A32D2D',border:'#F7C1C1'},
+  {bg:'#F1EFE8',text:'#444441',border:'#D3D1C7'},
+  {bg:'#EEF0FE',text:'#3A3AB0',border:'#C0C4F6'},
+  {bg:'#FFF3E0',text:'#7A4A00',border:'#FFCC80'},
+];
+const DAY_KO=['일','월','화','수','목','금','토'];
+const MONTH_KO=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+let jobs=[], scheduleData=[], calYear, calMonth, mode='sequential';
+
+function setMode(m){
+  mode=m;
+  document.getElementById('btnSeq').className='mode-btn'+(m==='sequential'?' active':'');
+  document.getElementById('btnPar').className='mode-btn'+(m==='parallel'?' active':'');
+  document.getElementById('modeHint').textContent=m==='sequential'
+    ?'우선순위 순서대로 한 번에 하나씩 집중해서 처리합니다.'
+    :'모든 일감을 기간 내에 동시에 병행하며, 우선순위가 높을수록 하루 분량을 더 많이 배분합니다.';
+}
+
+function todayStr(){
+  const t=new Date();
+  return`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+}
+function offsetDate(base,days){
+  const d=new Date(base);d.setDate(d.getDate()+days);
+  return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function daysBetween(a,b){return Math.round((new Date(b)-new Date(a))/86400000)}
+function jobTemplate(id){const s=todayStr();return{id,name:'',words:'',start:s,end:offsetDate(s,6),priority:'2'};}
+
+function addJob(){
+  if(jobs.length>=10)return;
+  jobs.push(jobTemplate(Date.now()));renderJobs();
+}
+function removeJob(id){
+  if(jobs.length<=2)return;
+  jobs=jobs.filter(j=>j.id!==id);renderJobs();
+}
+function updateJob(id,field,val){
+  const j=jobs.find(j=>j.id===id);if(j)j[field]=val;
+}
+
+function renderJobs(){
+  const list=document.getElementById('jobList');list.innerHTML='';
+  jobs.forEach(j=>{
+    const row=document.createElement('div');row.className='job-row';
+    row.innerHTML=`
+      <select onchange="updateJob(${j.id},'priority',this.value)">
+        <option value="1"${j.priority==='1'?' selected':''}>🔴 높음</option>
+        <option value="2"${j.priority==='2'?' selected':''}>🟡 보통</option>
+        <option value="3"${j.priority==='3'?' selected':''}>🟢 낮음</option>
+      </select>
+      <input type="text" placeholder="일감 이름" value="${j.name}" oninput="updateJob(${j.id},'name',this.value)">
+      <input type="number" placeholder="단어 수" value="${j.words}" min="1" oninput="updateJob(${j.id},'words',this.value)">
+      <input type="date" value="${j.start}" onchange="updateJob(${j.id},'start',this.value)">
+      <input type="date" value="${j.end}" onchange="updateJob(${j.id},'end',this.value)">
+      <button class="btn-remove" onclick="removeJob(${j.id})" title="삭제"${jobs.length<=2?' disabled':''}>${jobs.length<=2?'<span style="opacity:0.3">−</span>':'−'}</button>
+    `;
+    list.appendChild(row);
+  });
+  const btn=document.getElementById('btnAdd');
+  btn.style.opacity=jobs.length>=10?'0.4':'1';
+  btn.style.pointerEvents=jobs.length>=10?'none':'auto';
+}
+
+function showError(msg){
+  const el=document.getElementById('errMsg');el.textContent=msg;el.style.display='block';
+  setTimeout(()=>{el.style.display='none';},4000);
+}
+
+function calculate(){
+  for(const j of jobs){
+    if(!j.name.trim())return showError('모든 일감의 이름을 입력해주세요.');
+    if(!j.words||isNaN(j.words)||parseInt(j.words)<1)return showError('분량(단어 수)을 올바르게 입력해주세요.');
+    if(!j.start||!j.end)return showError('작업개시일과 마감일을 모두 입력해주세요.');
+    if(j.start>j.end)return showError(`"${j.name}"의 마감일이 작업개시일보다 앞서 있습니다.`);
+  }
+  const sorted=[...jobs].sort((a,b)=>{
+    if(a.priority!==b.priority)return parseInt(a.priority)-parseInt(b.priority);
+    return a.end>b.end?1:-1;
+  });
+  scheduleData=mode==='sequential'?calcSequential(sorted):calcParallel(sorted);
+  const allDates=scheduleData.flatMap(j=>[new Date(j.schedStart),new Date(j.schedEnd)]);
+  const minDate=new Date(Math.min(...allDates));
+  calYear=minDate.getFullYear();calMonth=minDate.getMonth();
+  document.getElementById('resultArea').style.display='block';
+  renderSummary();renderCalendar();renderLegend();
+  document.getElementById('resultArea').scrollIntoView({behavior:'smooth'});
+}
+
+function calcSequential(sorted){
+  let cursor=null;
+  return sorted.map((j,idx)=>{
+    const words=parseInt(j.words);
+    let schedStart=(!cursor||j.start>cursor)?j.start:cursor;
+    if(schedStart>j.end)schedStart=j.start;
+    const days=Math.max(1,daysBetween(schedStart,j.end)+1);
+    cursor=offsetDate(j.end,1);
+    return{...j,colorIdx:idx%COLORS.length,sortOrder:idx+1,schedStart,schedEnd:j.end,days,wordsPerDay:Math.ceil(words/days),words};
+  });
+}
+function calcParallel(sorted){
+  return sorted.map((j,idx)=>{
+    const words=parseInt(j.words);
+    const days=Math.max(1,daysBetween(j.start,j.end)+1);
+    return{...j,colorIdx:idx%COLORS.length,sortOrder:idx+1,schedStart:j.start,schedEnd:j.end,days,wordsPerDay:Math.ceil(words/days),words};
+  });
+}
+
+function dateStr(y,m,d){return`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}
+
+function renderSummary(){
+  const total=scheduleData.reduce((s,j)=>s+j.words,0);
+  const maxEnd=scheduleData.reduce((a,b)=>a.schedEnd>b.schedEnd?a:b).schedEnd;
+  const minStart=scheduleData.reduce((a,b)=>a.schedStart<b.schedStart?a:b).schedStart;
+  const span=daysBetween(minStart,maxEnd)+1;
+  document.getElementById('summaryGrid').innerHTML=`
+    <div class="metric"><div class="metric-label">작업 방식</div><div class="metric-val" style="font-size:14px">${mode==='sequential'?'순차 우선':'병렬 우선'}</div></div>
+    <div class="metric"><div class="metric-label">총 일감 수</div><div class="metric-val">${scheduleData.length}개</div></div>
+    <div class="metric"><div class="metric-label">총 분량</div><div class="metric-val">${total.toLocaleString()}<span style="font-size:12px;font-weight:400;color:#aaa"> 단어</span></div></div>
+    <div class="metric"><div class="metric-label">전체 기간</div><div class="metric-val">${span}<span style="font-size:12px;font-weight:400;color:#aaa"> 일</span></div></div>
+  `;
+}
+
+function renderCalendar(){
+  document.getElementById('calMonthLabel').textContent=`${calYear}년 ${MONTH_KO[calMonth]}`;
+  const grid=document.getElementById('calGrid');grid.innerHTML='';
+  DAY_KO.forEach(d=>{const h=document.createElement('div');h.className='cal-day-header';h.textContent=d;grid.appendChild(h);});
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const prevDays=new Date(calYear,calMonth,0).getDate();
+  const today=new Date();today.setHours(0,0,0,0);
+  const totalCells=Math.ceil((firstDay+daysInMonth)/7)*7;
+  for(let i=0;i<totalCells;i++){
+    const cell=document.createElement('div');cell.className='cal-cell';
+    let y=calYear,m=calMonth,d;
+    if(i<firstDay){d=prevDays-firstDay+i+1;m=calMonth-1;if(m<0){m=11;y--;}cell.classList.add('other-month');}
+    else if(i>=firstDay+daysInMonth){d=i-firstDay-daysInMonth+1;m=calMonth+1;if(m>11){m=0;y++;}cell.classList.add('other-month');}
+    else{d=i-firstDay+1;}
+    const ds=dateStr(y,m,d);
+    if(new Date(y,m,d).getTime()===today.getTime())cell.classList.add('today');
+    const dd=document.createElement('div');dd.className='cal-date';dd.textContent=d;cell.appendChild(dd);
+    scheduleData.forEach(j=>{
+      if(ds>=j.schedStart&&ds<=j.schedEnd){
+        const c=COLORS[j.colorIdx];
+        const bar=document.createElement('div');bar.className='bar';
+        if(ds===j.schedStart&&ds===j.schedEnd)bar.classList.add('single');
+        else if(ds===j.schedStart)bar.classList.add('start');
+        else if(ds===j.schedEnd)bar.classList.add('end');
+        else bar.classList.add('mid');
+        bar.style.cssText=`background:${c.bg};color:${c.text};border:0.5px solid ${c.border}`;
+        bar.textContent=ds===j.schedStart?`${j.name} (~${j.wordsPerDay.toLocaleString()}단어/일)`:'​';
+        bar.title=`${j.name} | 하루 약 ${j.wordsPerDay.toLocaleString()} 단어`;
+        cell.appendChild(bar);
+      }
+    });
+    grid.appendChild(cell);
+  }
+}
+
+function renderLegend(){
+  const leg=document.getElementById('legend');leg.innerHTML='';
+  scheduleData.forEach(j=>{
+    const c=COLORS[j.colorIdx];
+    const pLabel=j.priority==='1'?'높음':j.priority==='2'?'보통':'낮음';
+    const item=document.createElement('div');item.className='legend-item';
+    item.innerHTML=`<span class="legend-dot" style="background:${c.bg};border:0.5px solid ${c.border}"></span><span>${j.sortOrder}순위 · <strong>${j.name}</strong> (${j.words.toLocaleString()}단어 · ${pLabel} · ${j.schedStart} ~ ${j.schedEnd})</span>`;
+    leg.appendChild(item);
+  });
+}
+
+function changeMonth(dir){
+  calMonth+=dir;
+  if(calMonth>11){calMonth=0;calYear++;}
+  if(calMonth<0){calMonth=11;calYear--;}
+  renderCalendar();
+}
+
+function downloadSelf(){
+  const src=document.documentElement.outerHTML;
+  const blob=new Blob([src],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const today=new Date();
+  const ds=`${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}`;
+  a.download=`번역검수스케줄러_${ds}.html`;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+jobs.push(jobTemplate(1));
+jobs.push(jobTemplate(2));
+renderJobs();
+</script>
+</body>
+</html>
