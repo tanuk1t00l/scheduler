@@ -134,6 +134,15 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.25rem}
         <button class="tog-btn" id="wkNoSat" onclick="setWeekend('noSat')">토요일 제외</button>
       </div>
     </div>
+    <div class="option-group">
+      <div class="section-label">하루 처리 가능량 (단어)</div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input type="number" id="dailyCap" min="1" placeholder="제한 없음"
+          style="width:120px;height:32px;font-size:12px;padding:0 8px;border:0.5px solid #d0d0cc;border-radius:7px;background:#fff;color:#1a1a1a;outline:none"
+          oninput="updateDailyCap(this.value)">
+        <span style="font-size:11px;color:#bbb">비우면 제한 없음</span>
+      </div>
+    </div>
   </div>
 
   <div class="error" id="errMsg"></div>
@@ -190,6 +199,7 @@ const MONTH_KO=['1월','2월','3월','4월','5월','6월','7월','8월','9월','
 let jobs=[], scheduleData=[], calYear, calMonth;
 let mode='sequential';
 let weekendMode='all'; // all | none | noSun | noSat
+let dailyCap=0; // 0 = 제한 없음
 let jobSectionOpen=true;
 
 /* ── 접기 ── */
@@ -215,6 +225,11 @@ function setWeekend(w){
   ['wkAll','wkNo','wkNoSun','wkNoSat'].forEach(id=>document.getElementById(id).classList.remove('active'));
   const map={all:'wkAll',none:'wkNo',noSun:'wkNoSun',noSat:'wkNoSat'};
   document.getElementById(map[w]).classList.add('active');
+  saveLS();
+}
+
+function updateDailyCap(val){
+  dailyCap=parseInt(val)||0;
   saveLS();
 }
 
@@ -264,7 +279,7 @@ function jobTemplate(id){const s=todayStr();return{id,name:'',words:'',start:s,e
 const LS_KEY='trans_sched_v1';
 
 function saveLS(){
-  try{localStorage.setItem(LS_KEY,JSON.stringify({jobs,mode,weekendMode}));}catch(e){}
+  try{localStorage.setItem(LS_KEY,JSON.stringify({jobs,mode,weekendMode,dailyCap}));}catch(e){}
 }
 function loadLS(){
   try{
@@ -275,6 +290,7 @@ function loadLS(){
     jobs=d.jobs;
     if(d.mode)setMode(d.mode);
     if(d.weekendMode)setWeekend(d.weekendMode);
+    if(d.dailyCap){dailyCap=d.dailyCap;const el=document.getElementById('dailyCap');if(el)el.value=d.dailyCap;}
     return true;
   }catch(e){return false;}
 }
@@ -340,22 +356,85 @@ function calculate(){
   document.getElementById('resultArea').scrollIntoView({behavior:'smooth'});
 }
 
+/* 날짜 목록 반환 */
+function getWorkDates(start, end){
+  const dates=[];
+  const cur=new Date(start);
+  const fin=new Date(end);
+  while(cur<=fin){
+    const ds=dateStr(cur.getFullYear(),cur.getMonth(),cur.getDate());
+    if(isWorkDay(ds)) dates.push(ds);
+    cur.setDate(cur.getDate()+1);
+  }
+  return dates;
+}
+
+/* 날짜별 정확한 단어수 맵 생성
+   cap>0이면 하루 최대 cap단어, 초과분은 map에 초과 플래그 포함
+   균등 배분 후 나머지는 앞쪽에 1씩 */
+function buildDailyWords(schedStart, schedEnd, totalWords){
+  const workDates=getWorkDates(schedStart, schedEnd);
+  const n=workDates.length;
+  if(n===0) return {};
+  const base=Math.floor(totalWords/n);
+  let remainder=totalWords - base*n;
+  const map={};
+  workDates.forEach(ds=>{
+    const w=base+(remainder-->0?1:0);
+    const over=dailyCap>0&&w>dailyCap;
+    map[ds]={words:w, over};
+  });
+  return map;
+}
+
 function calcSequential(sorted){
   let cursor=null;
   return sorted.map((j,idx)=>{
     const words=parseInt(j.words);
     let schedStart=(!cursor||j.start>cursor)?j.start:cursor;
     if(schedStart>j.end)schedStart=j.start;
-    const wdays=Math.max(1,workDaysBetween(schedStart,j.end));
-    cursor=offsetDate(j.end,1);
-    return{...j,colorIdx:idx%COLORS.length,sortOrder:idx+1,schedStart,schedEnd:j.end,workDays:wdays,wordsPerDay:Math.ceil(words/wdays),words};
+
+    let schedEnd=j.end;
+    let dailyWords={};
+
+    if(dailyCap>0){
+      // cap 기준으로 실제 완료일 계산
+      const allDates=getWorkDates(schedStart, j.end);
+      let remaining=words;
+      let actualEnd=schedStart;
+      for(const ds of allDates){
+        const assign=Math.min(remaining, dailyCap);
+        const over=assign>dailyCap; // 항상 false (assign<=cap)
+        dailyWords[ds]={words:assign, over:false};
+        remaining-=assign;
+        actualEnd=ds;
+        if(remaining<=0) break;
+      }
+      // cap이 부족해서 마감 전에 다 못 끝낸 경우 → 마감까지 균등 배분(초과 표시)
+      if(remaining>0){
+        dailyWords=buildDailyWords(schedStart, j.end, words);
+        schedEnd=j.end;
+      } else {
+        schedEnd=actualEnd;
+      }
+    } else {
+      dailyWords=buildDailyWords(schedStart, j.end, words);
+      schedEnd=j.end;
+    }
+
+    const wdays=Object.keys(dailyWords).length||1;
+    const baseWpd=Math.floor(words/wdays);
+    cursor=offsetDate(schedEnd,1);
+    return{...j,colorIdx:idx%COLORS.length,sortOrder:idx+1,schedStart,schedEnd,workDays:wdays,wordsPerDay:baseWpd,dailyWords,words};
   });
 }
 function calcParallel(sorted){
   return sorted.map((j,idx)=>{
     const words=parseInt(j.words);
     const wdays=Math.max(1,workDaysBetween(j.start,j.end));
-    return{...j,colorIdx:idx%COLORS.length,sortOrder:idx+1,schedStart:j.start,schedEnd:j.end,workDays:wdays,wordsPerDay:Math.ceil(words/wdays),words};
+    const dailyWords=buildDailyWords(j.start,j.end,words);
+    const baseWpd=wdays>0?Math.floor(words/wdays):words;
+    return{...j,colorIdx:idx%COLORS.length,sortOrder:idx+1,schedStart:j.start,schedEnd:j.end,workDays:wdays,wordsPerDay:baseWpd,dailyWords,words};
   });
 }
 
@@ -458,9 +537,16 @@ function renderCalendar(){
             bar.style.borderRight='none';
           }
 
-          /* 텍스트: 시각적 시작이면 이름+단어수, 아니면 단어수만 */
-          bar.textContent=visStart?`${j.name} (${j.wordsPerDay.toLocaleString()})`:j.wordsPerDay.toLocaleString();
-          bar.title=`${j.name} | 하루 약 ${j.wordsPerDay.toLocaleString()} 단어`;
+          /* 텍스트: 날짜별 정확한 단어수 사용, 초과 시 빨간색 */
+          const dayData=(j.dailyWords&&j.dailyWords[ci.ds]);
+          const todayWords=dayData?dayData.words:0;
+          const isOver=dayData&&dayData.over;
+          if(isOver){
+            bar.style.color='#c0392b';
+            bar.style.fontWeight='600';
+          }
+          bar.textContent=visStart?`${j.name} (${todayWords.toLocaleString()})`:todayWords.toLocaleString();
+          bar.title=`${j.name} | ${todayWords.toLocaleString()} 단어`+(isOver?' ⚠ 일일 한도 초과':'');
           cell.appendChild(bar);
         }
       });
@@ -492,7 +578,7 @@ function downloadJSON(){
   const yy=String(t.getFullYear()).slice(2);
   const mm=String(t.getMonth()+1).padStart(2,'0');
   const dd=String(t.getDate()).padStart(2,'0');
-  const data=JSON.stringify({jobs,mode,weekendMode},null,2);
+  const data=JSON.stringify({jobs,mode,weekendMode,dailyCap},null,2);
   const blob=new Blob([data],{type:'application/json;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -510,6 +596,7 @@ function restoreFromJSON(data){
     jobs=parsed.jobs;
     if(parsed.mode)setMode(parsed.mode);
     if(parsed.weekendMode)setWeekend(parsed.weekendMode);
+    if(parsed.dailyCap){dailyCap=parsed.dailyCap;const el=document.getElementById('dailyCap');if(el)el.value=parsed.dailyCap;}else{dailyCap=0;const el=document.getElementById('dailyCap');if(el)el.value='';}
     renderJobs();
     saveLS();
     // 접혀 있으면 펼치기
