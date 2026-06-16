@@ -145,6 +145,13 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.25rem}
     <button class="btn-add" id="btnAdd" onclick="addJob()">＋ 일감 추가 (최대 10개)</button>
   </div>
 
+  <!-- 옵션 영역 -->
+  <div class="section-header">
+    <span class="section-title">작업 설정</span>
+    <button class="btn-collapse" id="btnOptCollapse" onclick="toggleOptCollapse()">▲ 접기</button>
+  </div>
+  <div class="collapsible" id="optSection">
+
   <!-- 옵션 1행: 작업방식 | 하루작업량 | 주말처리 -->
   <div class="options-row" style="align-items:flex-start;margin-bottom:0.5rem">
     <div class="option-group">
@@ -199,6 +206,8 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.25rem}
       </div>
     </div>
   </div>
+
+  </div><!-- /optSection -->
 
   <div class="error" id="errMsg"></div>
   <div class="btn-row">
@@ -343,6 +352,12 @@ function renderOffdayList(){
 }
 
 /* ── 접기 ── */
+function toggleOptCollapse(){
+  const sec=document.getElementById('optSection');
+  const btn=document.getElementById('btnOptCollapse');
+  const open=sec.classList.toggle('collapsed');
+  btn.textContent=open?'▼ 펼치기':'▲ 접기';
+}
 function toggleCollapse(){
   jobSectionOpen=!jobSectionOpen;
   const sec=document.getElementById('jobSection');
