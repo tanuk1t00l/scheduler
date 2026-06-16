@@ -50,6 +50,11 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.25rem}
 .btn-dl{background:transparent;border:0.5px solid #d0d0cc;border-radius:7px;font-size:13px;padding:8px 16px;cursor:pointer;color:#666;display:flex;align-items:center;gap:5px;flex:1;justify-content:center}
 .btn-dl:hover{background:#f5f5f3;color:#1a1a1a}
 .error{font-size:12px;color:#c0392b;margin-bottom:0.75rem;display:none}
+.memo-wrap{margin-top:2rem;border-top:0.5px solid #e8e8e6;padding-top:1.5rem}
+.memo-wrap .section-title{font-size:12px;font-weight:500;color:#888;letter-spacing:0.02em;display:block;margin-bottom:8px}
+.memo-box{width:100%;min-height:120px;resize:vertical;border:0.5px solid #d0d0cc;border-radius:7px;padding:10px 12px;font-size:13px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;color:#1a1a1a;background:#fff;line-height:1.6;outline:none}
+.memo-box:focus{border-color:#999}
+.memo-saved{font-size:11px;color:#bbb;text-align:right;margin-top:4px;min-height:16px}
 
 .divider{border:none;border-top:0.5px solid #e8e8e6;margin:1.5rem 0}
 .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.5rem}
@@ -156,6 +161,13 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.25rem}
     </div>
     <div class="cal-wrap"><div class="cal-grid" id="calGrid"></div></div>
     <div class="legend" id="legend"></div>
+  </div>
+
+  <!-- 메모 -->
+  <div class="memo-wrap">
+    <span class="section-title">Memo</span>
+    <textarea class="memo-box" id="memoBox" placeholder="기타 메모" oninput="saveMemo()"></textarea>
+    <div class="memo-saved" id="memoSaved"></div>
   </div>
 </div>
 
@@ -508,6 +520,21 @@ function restoreFromJSON(data){
 }
 
 /* ── 드래그 드롭 ── */
+function saveMemo(){
+  const val=document.getElementById('memoBox').value;
+  try{localStorage.setItem('trans_sched_memo',val);}catch(e){}
+  const el=document.getElementById('memoSaved');
+  el.textContent='저장됨';
+  clearTimeout(saveMemo._t);
+  saveMemo._t=setTimeout(()=>{el.textContent='';},1500);
+}
+function loadMemo(){
+  try{
+    const val=localStorage.getItem('trans_sched_memo');
+    if(val!==null)document.getElementById('memoBox').value=val;
+  }catch(e){}
+}
+
 function initDragDrop(){
   const overlay=document.getElementById('dropOverlay');
   let dragCount=0;
@@ -535,6 +562,7 @@ if(!loadLS()){
   jobs.push(jobTemplate(2));
 }
 renderJobs();
+loadMemo();
 initDragDrop();
 </script>
 </body>
