@@ -164,11 +164,12 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.25rem}
     </div>
     <div class="offday-section option-group">
       <div class="section-label">휴무일 설정 <span style="font-size:11px;font-weight:400;color:#bbb">(공휴일·휴가 등 작업 불가 날짜)</span></div>
-      <div class="offday-type-row">
-        <button class="offday-type-btn active" id="odSingle" onclick="setOffdayType('single')">단일 날짜</button>
-        <button class="offday-type-btn" id="odRange" onclick="setOffdayType('range')">기간</button>
-      </div>
-      <div class="offday-input-row" id="offdayInputRow">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        <div class="offday-type-row" style="margin-bottom:0">
+          <button class="offday-type-btn active" id="odSingle" onclick="setOffdayType('single')">단일 날짜</button>
+          <button class="offday-type-btn" id="odRange" onclick="setOffdayType('range')">기간</button>
+        </div>
+        <div class="offday-input-row" id="offdayInputRow" style="margin-bottom:0">
         <input type="date" id="offdayDate">
         <input type="text" id="offdayLabel" placeholder="메모 (예: 추석)" maxlength="20">
         <button class="btn-offday-add" onclick="addOffday()">추가</button>
@@ -276,10 +277,14 @@ function setOffdayType(t){
   document.getElementById('odSingle').classList.toggle('active',t==='single');
   document.getElementById('odRange').classList.toggle('active',t==='range');
   const row=document.getElementById('offdayInputRow');
+  // 탭+버튼은 유지, 날짜 입력 부분만 교체
+  // 기존 날짜/메모/추가 요소 제거 (탭 div 이후)
+  const typeDiv=row.querySelector('.offday-type-row');
+  while(row.lastChild!==typeDiv) row.removeChild(row.lastChild);
   if(t==='single'){
-    row.innerHTML=`<input type="date" id="offdayDate"><input type="text" id="offdayLabel" placeholder="메모 (예: 추석)" maxlength="20" class="offday-input-row input[type=text]" style="height:32px;font-size:12px;padding:0 8px;border:0.5px solid #d0d0cc;border-radius:7px;background:#fff;color:#1a1a1a;outline:none;width:110px"><button class="btn-offday-add" onclick="addOffday()">추가</button>`;
+    row.insertAdjacentHTML('beforeend',`<input type="date" id="offdayDate" style="height:32px;font-size:12px;padding:0 8px;border:0.5px solid #d0d0cc;border-radius:7px;background:#fff;color:#1a1a1a;font-family:'Noto Sans KR',sans-serif;letter-spacing:-0.02em;outline:none"><input type="text" id="offdayLabel" placeholder="메모 (예: 추석)" maxlength="20" style="height:32px;font-size:12px;padding:0 8px;border:0.5px solid #d0d0cc;border-radius:7px;background:#fff;color:#1a1a1a;outline:none;width:110px"><button class="btn-offday-add" onclick="addOffday()">추가</button>`);
   } else {
-    row.innerHTML=`<input type="date" id="offdayDateFrom"><span class="offday-range-sep">~</span><input type="date" id="offdayDateTo"><input type="text" id="offdayLabel" placeholder="메모 (예: 연차)" maxlength="20" style="height:32px;font-size:12px;padding:0 8px;border:0.5px solid #d0d0cc;border-radius:7px;background:#fff;color:#1a1a1a;outline:none;width:110px"><button class="btn-offday-add" onclick="addOffday()">추가</button>`;
+    row.insertAdjacentHTML('beforeend',`<input type="date" id="offdayDateFrom" style="height:32px;font-size:12px;padding:0 8px;border:0.5px solid #d0d0cc;border-radius:7px;background:#fff;color:#1a1a1a;font-family:'Noto Sans KR',sans-serif;letter-spacing:-0.02em;outline:none"><span class="offday-range-sep">~</span><input type="date" id="offdayDateTo" style="height:32px;font-size:12px;padding:0 8px;border:0.5px solid #d0d0cc;border-radius:7px;background:#fff;color:#1a1a1a;font-family:'Noto Sans KR',sans-serif;letter-spacing:-0.02em;outline:none"><input type="text" id="offdayLabel" placeholder="메모 (예: 연차)" maxlength="20" style="height:32px;font-size:12px;padding:0 8px;border:0.5px solid #d0d0cc;border-radius:7px;background:#fff;color:#1a1a1a;outline:none;width:110px"><button class="btn-offday-add" onclick="addOffday()">추가</button>`);
   }
 }
 function toggleOffdayList(){
