@@ -134,7 +134,16 @@ h1{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:0.25rem}
   <div class="error" id="errMsg"></div>
   <div class="btn-row">
     <button class="btn-calc" onclick="calculate()">스케줄 산출하기</button>
-    <button class="btn-dl" onclick="downloadSelf()">↓ HTML로 저장</button>
+    <button class="btn-dl" onclick="downloadJSON()">↓ JSON으로 저장</button>
+  </div>
+
+  <!-- 드래그 드롭 복원 오버레이 -->
+  <div id="dropOverlay" style="display:none;position:fixed;inset:0;background:rgba(26,26,26,0.55);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:12px">
+    <div style="background:#fff;border-radius:12px;padding:2rem 2.5rem;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.18)">
+      <div style="font-size:32px;margin-bottom:0.75rem">&#128194;</div>
+      <div style="font-size:15px;font-weight:500;color:#1a1a1a;margin-bottom:4px">JSON 파일을 놓아주세요</div>
+      <div style="font-size:12px;color:#aaa">저장된 일감 데이터를 복원합니다</div>
+    </div>
   </div>
 
   <div id="resultArea" style="display:none">
@@ -446,22 +455,64 @@ function changeMonth(dir){
   renderCalendar();
 }
 
-function downloadSelf(){
-  const src=document.documentElement.outerHTML;
-  const blob=new Blob([src],{type:'text/html;charset=utf-8'});
+function downloadJSON(){
+  const t=new Date();
+  const yy=String(t.getFullYear()).slice(2);
+  const mm=String(t.getMonth()+1).padStart(2,'0');
+  const dd=String(t.getDate()).padStart(2,'0');
+  const data=JSON.stringify({jobs,mode,weekendMode},null,2);
+  const blob=new Blob([data],{type:'application/json;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url;
-  const t=new Date();
-  const ds=`${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}`;
-  a.download=`번역검수스케줄러_${ds}.html`;
+  a.download=`번역검수스케줄러_${yy}${mm}${dd}.json`;
   document.body.appendChild(a);a.click();
   document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+function restoreFromJSON(data){
+  try{
+    const parsed=typeof data==='string'?JSON.parse(data):data;
+    if(!parsed.jobs||!Array.isArray(parsed.jobs)||parsed.jobs.length<2)
+      return alert('유효하지 않은 파일입니다.');
+    jobs=parsed.jobs;
+    if(parsed.mode)setMode(parsed.mode);
+    if(parsed.weekendMode)setWeekend(parsed.weekendMode);
+    renderJobs();
+    // 접혀 있으면 펼치기
+    if(!jobSectionOpen)toggleCollapse();
+    document.getElementById('resultArea').style.display='none';
+    scheduleData=[];
+  }catch(e){alert('파일을 읽을 수 없습니다.');}
+}
+
+/* ── 드래그 드롭 ── */
+function initDragDrop(){
+  const overlay=document.getElementById('dropOverlay');
+  let dragCount=0;
+  document.addEventListener('dragenter',e=>{
+    e.preventDefault();dragCount++;
+    overlay.style.display='flex';
+  });
+  document.addEventListener('dragleave',()=>{
+    dragCount--;
+    if(dragCount<=0){dragCount=0;overlay.style.display='none';}
+  });
+  document.addEventListener('dragover',e=>e.preventDefault());
+  document.addEventListener('drop',e=>{
+    e.preventDefault();dragCount=0;overlay.style.display='none';
+    const file=e.dataTransfer.files[0];
+    if(!file||!file.name.endsWith('.json'))return alert('.json 파일만 불러올 수 있습니다.');
+    const reader=new FileReader();
+    reader.onload=ev=>restoreFromJSON(ev.target.result);
+    reader.readAsText(file,'utf-8');
+  });
 }
 
 jobs.push(jobTemplate(1));
 jobs.push(jobTemplate(2));
 renderJobs();
+initDragDrop();
 </script>
 </body>
 </html>
